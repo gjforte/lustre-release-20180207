@@ -38,7 +38,9 @@ init_test_env $@
 STORED_MDSSIZE=$MDSSIZE
 STORED_OSTSIZE=$OSTSIZE
 MDSSIZE=200000
+[ $(facet_fstype $SINGLEMDS) = "zfs" ] && MDSSIZE=400000
 OSTSIZE=200000
+[ $(facet_fstype ost1) = "zfs" ] && OSTSIZE=400000
 
 fs2mds_HOST=$mds_HOST
 fs2ost_HOST=$ost_HOST
@@ -7534,6 +7536,9 @@ run_test 105 "check file creation for ro and rw bind mnt pt"
 test_106() {
 	local repeat=5
 
+	DBG_SAVE="`$LCTL get_param -n debug`"
+	$LCTL set_param debug="0"
+
 	reformat
 	setupall
 	mkdir -p $DIR/$tdir || error "create $tdir failed"
@@ -7553,6 +7558,7 @@ test_106() {
 #shows that osp code is buggy
 	do_facet mds1 $LCTL set_param fail_loc=0 fail_val=0
 
+	$LCTL set_param debug="$DBG_SAVE"
 	cleanupall
 }
 run_test 106 "check osp llog processing when catalog is wrapped"
